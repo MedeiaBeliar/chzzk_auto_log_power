@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "치지직 통나무 파워 자동 획득",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "description": "치지직 파워(통나무) 자동 획득 및 파워 개수 표시",
     "content_scripts": [
         {
@@ -31,6 +31,10 @@
     "addons": {
         "{e060084d-1a49-45d2-b446-decf15b32ff5}": {
             "updates": [
+                {
+                    "version": "1.0.5",
+                    "update_link": "https://github.com/choco-lily/chzzk_auto_log_power/releases/download/1.0.5/firefox.zip"
+                },
                 {
                     "version": "1.0.4",
                     "update_link": "https://github.com/choco-lily/chzzk_auto_log_power/releases/download/1.0.4/firefox.zip"

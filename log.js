@@ -372,7 +372,7 @@ function renderLogs() {
                 <div class="log-content">
                     <div class="channel-name">
                         <a href="https://chzzk.naver.com/${log.channelId}" target="_blank" class="channel-link">
-                            ${log.channelName}${log.verifiedMark ? ' <img src="https://ssl.pstatic.net/static/nng/glive/image/icon_official_mark.png" alt="인증" style="width:16px;height:16px;vertical-align:middle;margin-left:2px;">' : ''}
+                            ${log.channelName}${log.verifiedMark ? ` <img src="https://ssl.pstatic.net/static/nng/glive/image/${String(log.verifiedMarkType).toUpperCase() === 'CHALLENGER' ? 'icon_challenger_mark.png' : 'icon_partner_mark.png'}" alt="${String(log.verifiedMarkType).toUpperCase() === 'CHALLENGER' ? '챌린저' : '파트너'}" style="width:16px;height:16px;vertical-align:middle;margin-left:2px;">` : ''}
                         </a> ${detailsBtn}
                     </div>
                     <div class="log-details">

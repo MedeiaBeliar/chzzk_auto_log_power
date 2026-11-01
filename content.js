@@ -200,6 +200,7 @@ async function getChannelInfo(channelId) {
                 channelName: data.content.channelName,
                 channelImageUrl: data.content.channelImageUrl,
                 verifiedMark: data.content.verifiedMark,
+                verifiedMarkType: data.content.verifiedMarkType,
             };
         }
     } catch (error) {
@@ -214,6 +215,7 @@ async function getChannelInfo(channelId) {
         channelName: "알 수 없는 채널",
         channelImageUrl: null,
         verifiedMark: false,
+        verifiedMarkType: null,
     };
 }
 
@@ -229,6 +231,7 @@ async function savePowerLog(channelId, amount, method, testAmount = null, extra 
             channelName: channelInfo.channelName,
             channelImageUrl: channelInfo.channelImageUrl,
             verifiedMark: channelInfo.verifiedMark,
+            verifiedMarkType: channelInfo.verifiedMarkType,
             amount: amount,
             method: method, // 'follow', 'view', 'claimType' 등
         };
@@ -945,7 +948,7 @@ function createPowerBadge(amount, isInactive) {
                         x.active ? "inherit" : "#666"
                     };\">${x.channelName}${
                           x.verifiedMark
-                              ? ` <img src='https://ssl.pstatic.net/static/nng/glive/image/icon_official_mark.png' alt='인증' style='width:16px;height:16px;vertical-align:middle;margin-left:2px;'>`
+                              ? ` <img src='https://ssl.pstatic.net/static/nng/glive/image/${String(x.verifiedMarkType).toUpperCase() === "CHALLENGER" ? "icon_challenger_mark.png" : "icon_partner_mark.png"}' alt='${String(x.verifiedMarkType).toUpperCase() === "CHALLENGER" ? "챌린저" : "파트너"}' style='width:16px;height:16px;vertical-align:middle;margin-left:2px;'>`
                               : ""
                       }</span>
                   </div>
