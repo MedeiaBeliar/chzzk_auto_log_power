@@ -51,7 +51,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: var(--bg-primary);
             border-radius: 16px;
@@ -110,7 +110,7 @@
 
         .period-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
             gap: 20px;
         }
 
@@ -140,6 +140,8 @@
             font-weight: 600;
             font-size: 16px;
             color: var(--text-primary);
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .period-date {
@@ -148,6 +150,7 @@
             background: var(--bg-tertiary);
             padding: 4px 8px;
             border-radius: 6px;
+            white-space: nowrap;
         }
 
         .period-content {

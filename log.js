@@ -267,7 +267,8 @@ function updatePeriodStats() {
     if (allLogs.length > 0) {
         const firstLog = new Date(allLogs[allLogs.length - 1].timestamp);
         const lastLog = new Date(allLogs[0].timestamp);
-        allDateRange = `${firstLog.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} ~ ${lastLog.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}`;
+        const allPeriodDateOptions = { year: '2-digit', month: 'long', day: 'numeric' };
+        allDateRange = `${firstLog.toLocaleDateString('ko-KR', allPeriodDateOptions)} ~ ${lastLog.toLocaleDateString('ko-KR', allPeriodDateOptions)}`;
     }
     
     // 예측 별도 집계 및 메인 통계 업데이트
