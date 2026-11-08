@@ -932,6 +932,14 @@ async function clearAllLogs() {
     const ok = await showConfirm('모든 로그를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.', { title: '모든 로그 삭제', okText: '삭제', cancelText: '취소', destructive: true });
     if (ok) {
         try {
+            const latestViewLog = allLogs
+                .filter(log => log && String(log.method).toLowerCase() === 'view')
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+            if (latestViewLog && !Number.isNaN(new Date(latestViewLog.timestamp).getTime())) {
+                await browser.storage.local.set({
+                    lastPowerAcquisitionTime: latestViewLog.timestamp,
+                });
+            }
             await browser.storage.local.remove(['powerLogs']);
             allLogs = [];
             filteredLogs = [];

@@ -10,19 +10,7 @@ function calculateNextPowerTime() {
         
         let nextPowerTime;
         
-        if (lastAcquisitionTime) {
-            // 마지막 획득 시간이 있으면 그 시간부터 1시간 후
-            const lastTime = new Date(lastAcquisitionTime);
-            nextPowerTime = new Date(lastTime.getTime() + 60 * 60 * 1000);
-            
-            // 이미 1시간이 지났으면 현재 시간 기준으로 재계산
-            if (nextPowerTime <= now) {
-                nextPowerTime = calculateFromLastLog(logs, now);
-            }
-        } else {
-            // 마지막 획득 시간이 없으면 마지막 로그 기준으로 계산
-            nextPowerTime = calculateFromLastLog(logs, now);
-        }
+        nextPowerTime = calculateFromLastLog(logs, now, lastAcquisitionTime);
         
         updateTimeDisplay(nextPowerTime);
     }).catch((error) => {
@@ -32,28 +20,25 @@ function calculateNextPowerTime() {
 }
 
 // 마지막 로그 기준으로 다음 획득 시간 계산
-function calculateFromLastLog(logs, now) {
-    if (logs.length === 0) {
-        // 로그가 없으면 현재 시간부터 1시간 후
-        return new Date(now.getTime() + 60 * 60 * 1000);
+function calculateFromLastLog(logs, now, lastAcquisitionTime = null) {
+    const viewLogs = logs
+        .filter(log => log && String(log.method).toLowerCase() === 'view')
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const referenceTime = new Date(lastAcquisitionTime || viewLogs[0]?.timestamp);
+
+    if (Number.isNaN(referenceTime.getTime())) {
+        const nextHour = new Date(now);
+        nextHour.setMinutes(0, 0, 0);
+        nextHour.setHours(nextHour.getHours() + 1);
+        return nextHour;
     }
-    
-    // 가장 최근 로그 찾기
-    const lastLog = logs[0];
-    const lastLogTime = new Date(lastLog.timestamp);
-    
-    // 현재 시간의 분을 마지막 로그의 분으로 설정
-    const nextTime = new Date(now);
-    nextTime.setMinutes(lastLogTime.getMinutes());
-    nextTime.setSeconds(0);
-    nextTime.setMilliseconds(0);
-    
-    // 현재 시간보다 이전이면 다음 시간으로 설정
-    if (nextTime <= now) {
-        nextTime.setHours(nextTime.getHours() + 1);
+
+    const hourMs = 60 * 60 * 1000;
+    let nextTimeMs = referenceTime.getTime() + hourMs;
+    if (nextTimeMs <= now.getTime()) {
+        nextTimeMs += (Math.floor((now.getTime() - nextTimeMs) / hourMs) + 1) * hourMs;
     }
-    
-    return nextTime;
+    return new Date(nextTimeMs);
 }
 
 // 시간 표시 업데이트

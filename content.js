@@ -1084,12 +1084,16 @@ const CLOCK_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" heigh
 // 다음 파워 획득 시간 계산 (content script용)
 function calculateNextPowerTimeForClock() {
     return new Promise((resolve) => {
-        chrome.storage.local.get(['powerLogs'], (result) => {
+        chrome.storage.local.get(['powerLogs', 'lastPowerAcquisitionTime'], (result) => {
             const logs = result.powerLogs || [];
             const now = new Date();
-            
-            // view 타입 로그만 기준으로 계산
-            const nextPowerTime = calculateFromLastLogForClock(logs, now);
+
+            // 실제 획득 시각을 우선 사용하고, 기존 사용자는 view 로그를 기준으로 계산한다.
+            const nextPowerTime = calculateFromLastLogForClock(
+                logs,
+                now,
+                result.lastPowerAcquisitionTime
+            );
             
             resolve(nextPowerTime);
         });
@@ -1097,31 +1101,27 @@ function calculateNextPowerTimeForClock() {
 }
 
 // 마지막 로그 기준으로 다음 획득 시간 계산 (content script용)
-function calculateFromLastLogForClock(logs, now) {
-    // view 타입 로그만 필터링
-    const viewLogs = logs.filter(log => log.method === 'view');
-    
-    if (viewLogs.length === 0) {
-        // view 타입 로그가 없으면 현재 시간부터 1시간 후
-        return new Date(now.getTime() + 60 * 60 * 1000);
+function calculateFromLastLogForClock(logs, now, lastAcquisitionTime = null) {
+    const viewLogs = logs
+        .filter(log => log && String(log.method).toLowerCase() === 'view')
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const referenceTime = new Date(lastAcquisitionTime || viewLogs[0]?.timestamp);
+
+    if (Number.isNaN(referenceTime.getTime())) {
+        // 기준 기록이 전혀 없을 때도 매번 now + 1시간으로 리셋되지 않도록
+        // 다음 정시를 고정 목표로 사용한다.
+        const nextHour = new Date(now);
+        nextHour.setMinutes(0, 0, 0);
+        nextHour.setHours(nextHour.getHours() + 1);
+        return nextHour;
     }
-    
-    // 가장 최근 view 타입 로그 찾기
-    const lastLog = viewLogs[0];
-    const lastLogTime = new Date(lastLog.timestamp);
-    
-    // 현재 시간의 분을 마지막 로그의 분으로 설정
-    const nextTime = new Date(now);
-    nextTime.setMinutes(lastLogTime.getMinutes());
-    nextTime.setSeconds(0);
-    nextTime.setMilliseconds(0);
-    
-    // 현재 시간보다 이전이면 다음 시간으로 설정
-    if (nextTime <= now) {
-        nextTime.setHours(nextTime.getHours() + 1);
+
+    const hourMs = 60 * 60 * 1000;
+    let nextTimeMs = referenceTime.getTime() + hourMs;
+    if (nextTimeMs <= now.getTime()) {
+        nextTimeMs += (Math.floor((now.getTime() - nextTimeMs) / hourMs) + 1) * hourMs;
     }
-    
-    return nextTime;
+    return new Date(nextTimeMs);
 }
 
 // 시계 표시 업데이트
@@ -1280,6 +1280,9 @@ async function clickPowerButtonIfExists() {
                 const amountToLog = await getViewPowerAmountBySubscription(channelId);
                 await savePowerLog(channelId, amountToLog, "view");
                 lastViewLogTimestampMs = now;
+                await chrome.storage.local.set({
+                    lastPowerAcquisitionTime: new Date(now).toISOString(),
+                });
                 // 팝업에 파워 획득 알림
                 chrome.runtime.sendMessage({ action: 'powerAcquired' });
             }
@@ -1293,6 +1296,9 @@ async function clickPowerButtonIfExists() {
                 const amountToLog = await getViewPowerAmountBySubscription(channelId);
                 await savePowerLog(channelId, amountToLog, "view");
                 lastViewLogTimestampMs = now;
+                await chrome.storage.local.set({
+                    lastPowerAcquisitionTime: new Date(now).toISOString(),
+                });
                 // 팝업에 파워 획득 알림
                 chrome.runtime.sendMessage({ action: 'powerAcquired' });
             }
